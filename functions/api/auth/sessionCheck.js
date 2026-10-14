@@ -24,8 +24,9 @@ export async function onRequestGet(context) {
     const adminPassword = securityConfig.auth.admin.adminPassword;
     const userAuthCode = securityConfig.auth.user.authCode;
 
-    const adminRequired = !!(adminUsername && adminUsername.trim()) || !!(adminPassword && adminPassword.trim());
-    const userRequired = !!(userAuthCode && userAuthCode.trim());
+    // 初始化前也必须展示登录入口；服务端不会因未配置凭据而放行
+    const adminRequired = true;
+    const userRequired = true;
 
     // 检查会话
     const sessionResult = await validateAnySession(env, request);
