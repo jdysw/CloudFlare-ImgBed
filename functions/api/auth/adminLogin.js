@@ -24,17 +24,13 @@ export async function onRequestPost(context) {
 
     const usernameConfigured = !!(adminUsername && adminUsername.trim());
     const passwordConfigured = !!(adminPassword && adminPassword.trim());
-    const adminConfigured = usernameConfigured || passwordConfigured;
+    const adminConfigured = passwordConfigured; // 必须设置密码，不能仅依赖用户名
 
-    // 管理员未配置，无需认证，直接创建会话
+    // 未完成管理员初始化时一律拒绝签发会话，避免公开实例被抢先接管
     if (!adminConfigured) {
-        const { cookie } = await createSession(env, 'admin');
-        return new Response(JSON.stringify({ success: true }), {
-            status: 200,
-            headers: {
-                'Content-Type': 'application/json',
-                'Set-Cookie': cookie,
-            },
+        return new Response(JSON.stringify({ error: 'Admin credentials not initialized' }), {
+            status: 503,
+            headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
         });
     }
 

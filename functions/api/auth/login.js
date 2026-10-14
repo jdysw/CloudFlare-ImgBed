@@ -19,6 +19,14 @@ export async function onRequestPost(context) {
     }
     const rightAuthCode = securityConfig.auth.user.authCode;
 
+    // 未设置用户认证码时禁止签发匿名上传会话；公开下载不受影响
+    if (!rightAuthCode || !String(rightAuthCode).trim()) {
+        return new Response('Upload authentication not initialized', {
+            status: 503,
+            headers: { 'Cache-Control': 'no-store' },
+        });
+    }
+
     // 验证 authCode（兼容明文、SHA-256 和 PBKDF2 三种存储格式）
     if (rightAuthCode !== undefined && rightAuthCode !== '') {
         const isValid = await verifyPassword(authCode, rightAuthCode);
