@@ -13,7 +13,7 @@ import { HuggingFaceAPI } from "../utils/storage/huggingfaceAPI";
 import { WebDAVAPI } from "../utils/storage/webdavAPI";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getDatabase } from '../utils/databaseAdapter.js';
-import { getDefaultUploadChannel } from './defaultChannel.js';
+import { resolveUploadChannel } from './defaultChannel.js';
 
 
 export async function onRequest(context) {  // Contents of context object
@@ -100,34 +100,7 @@ async function processFileUpload(context, formdata = null) {
     // 路径安全性处理：防止路径穿越和特殊字符注入
     uploadFolder = sanitizeUploadFolder(uploadFolder);
 
-    let uploadChannel = 'TelegramNew';
-    switch (urlParamUploadChannel) {
-        case 'telegram':
-            uploadChannel = 'TelegramNew';
-            break;
-        case 'cfr2':
-            uploadChannel = 'CloudflareR2';
-            break;
-        case 's3':
-            uploadChannel = 'S3';
-            break;
-        case 'discord':
-            uploadChannel = 'Discord';
-            break;
-        case 'huggingface':
-            uploadChannel = 'HuggingFace';
-            break;
-        case 'webdav':
-            uploadChannel = 'WebDAV';
-            break;
-        case 'external':
-            uploadChannel = 'External';
-            break;
-        default:
-            // 未指定渠道时使用部署默认值；明确指定未知渠道保持旧版 Telegram 回退行为
-            uploadChannel = urlParamUploadChannel ? 'TelegramNew' : getDefaultUploadChannel(context.env, uploadConfig);
-            break;
-    }
+    const uploadChannel = resolveUploadChannel(urlParamUploadChannel, context.env, context.uploadConfig);
 
     // 将指定的渠道名称存入 context，供后续上传函数使用
     context.specifiedChannelName = urlParamChannelName || null;
