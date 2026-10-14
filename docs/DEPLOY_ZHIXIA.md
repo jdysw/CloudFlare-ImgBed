@@ -11,6 +11,7 @@
 | GitHub | `jdysw/CloudFlare-ImgBed`, `main` | GitHub 自动部署 |
 | D1 | `img_d1` | 文件元数据及系统配置 |
 | R2 | `zhixia-imgbed-media`，绑定 `img_r2` | 图床文件存储 |
+| 默认上传渠道 | `DEFAULT_UPLOAD_CHANNEL=cfr2` | 未指定渠道的上传默认走 R2；显式指定其他渠道不受影响 |
 | 构建命令 | `npm install` | 与官方文档一致 |
 | 构建目录 | `/frontend-dist` | 与官方文档一致 |
 
@@ -41,8 +42,10 @@
 2. 添加 R2 Bucket Binding：变量名必须是 `img_r2`，桶名为 `zhixia-imgbed-media`。
 3. **不要开放 R2 `r2.dev` 公共 URL**，图片统一通过本站 `/file/:id` 读取。
 4. 绑定完成后重新部署生产环境（仅修改绑定不保证当前部署即时更新）。
-5. 登录 `/dashboard` → 系统设置 → 上传设置，确认自动出现 R2 渠道 `R2_env`，并将上传默认渠道设为 Cloudflare R2。
+5. 在 Pages 生产环境变量中设置 `DEFAULT_UPLOAD_CHANNEL=cfr2`，确认后台自动出现 R2 渠道 `R2_env`。未显式指定渠道的上传将默认使用 R2；不要启用桶的公共直链。
 6. 从浏览器上传小尺寸测试图片，记录生成的文件链接；检查数据库 `files` 表新增记录、R2 对象存在、公开读取可用，随后删除测试图并确认对象及元数据都被清理。
+
+运行 `node --test tests/defaultChannel.test.js` 检查默认渠道回退逻辑。
 
 ## 验证与回滚
 

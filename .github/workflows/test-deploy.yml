@@ -1,0 +1,30 @@
+name: ImageBed deployment unit tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'functions/upload/defaultChannel.js'
+      - 'functions/upload/index.js'
+      - 'tests/defaultChannel.test.js'
+      - '.github/workflows/test-deploy.yml'
+  pull_request:
+    paths:
+      - 'functions/upload/defaultChannel.js'
+      - 'functions/upload/index.js'
+      - 'tests/defaultChannel.test.js'
+      - '.github/workflows/test-deploy.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  default-channel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 验证默认上传渠道行为
+        run: node --test tests/defaultChannel.test.js

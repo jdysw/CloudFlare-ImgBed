@@ -13,6 +13,7 @@ import { HuggingFaceAPI } from "../utils/storage/huggingfaceAPI";
 import { WebDAVAPI } from "../utils/storage/webdavAPI";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getDatabase } from '../utils/databaseAdapter.js';
+import { getDefaultUploadChannel } from './defaultChannel.js';
 
 
 export async function onRequest(context) {  // Contents of context object
@@ -123,7 +124,8 @@ async function processFileUpload(context, formdata = null) {
             uploadChannel = 'External';
             break;
         default:
-            uploadChannel = 'TelegramNew';
+            // 未指定渠道时使用部署默认值；明确指定未知渠道保持旧版 Telegram 回退行为
+            uploadChannel = urlParamUploadChannel ? 'TelegramNew' : getDefaultUploadChannel(context.env, uploadConfig);
             break;
     }
 
