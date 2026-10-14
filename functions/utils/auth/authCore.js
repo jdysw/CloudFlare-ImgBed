@@ -33,7 +33,7 @@ const UNAUTHORIZED = { authorized: false, authType: null };
  */
 async function checkAdmin({ env, request, adminConfigured }) {
     if (!adminConfigured) {
-        return AUTHORIZED('admin'); // 未配置管理员认证，视为管理员身份放行
+        return null; // 未初始化管理员密码时拒绝管理请求，避免后台无认证暴露
     }
 
     const session = await validateSession(env, request, 'admin');
@@ -66,7 +66,7 @@ async function checkUser({ env, request, url, authCodeConfigured, userAuthCode }
 
     // authCode
     if (!authCodeConfigured) {
-        return AUTHORIZED('user'); // 未配置用户认证，视为用户身份放行
+        return UNAUTHORIZED; // 未初始化上传认证码时拒绝匿名上传
     }
 
     if (url) {
@@ -103,7 +103,7 @@ export async function authenticate({
     const adminPassword = securityConfig.auth.admin.adminPassword;
     const userAuthCode = securityConfig.auth.user.authCode;
 
-    const adminConfigured = !!(adminUsername && adminUsername.trim()) || !!(adminPassword && adminPassword.trim());
+    const adminConfigured = !!(adminPassword && adminPassword.trim()); // 仅用户名不构成有效认证
     const authCodeConfigured = !!(userAuthCode && userAuthCode.trim());
 
     // --- API Token 验证（公共层，所有 scope 通用） ---
